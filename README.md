@@ -1,6 +1,9 @@
 # <p align="center" style="margin-top: 0px;">  **`OYO business`**
 # <p align="center" style="margin-top: 0px;"> ![Oyo1](https://github.com/AmitPatel-analyst/SQL-Case-Study/assets/120770473/1796bf70-d14d-4295-ae5b-018f0f14fa80)
-This repository hosts the solutions for Oyo business room sales analysis.        
+
+
+This repository hosts the solutions for Oyo business room sales analysis.  
+
 I used various SQL functions such as :          
  Case When Statements           
  CTE           
@@ -26,6 +29,6 @@ Insights:-
      
 4. The % cancellation Rate is high on all 9 cities except pune , so Oyo should focus on finding reasons about cancellation.    
         
-***
+
 ## Case Study Solutions
 Click [here](https://github.com/Vaibhavmakkar25/OYO-Business-Case-Study/blob/main/SqlCode_OYO_business.sql)

@@ -1,5 +1,6 @@
 # <p align="center" style="margin-top: 0px;">  **`OYO business`**
-# <p align="center" style="margin-top: 0px;"> ![https://github.com/Vaibhavmakkar25/OYO-Business-Case-Study/blob/main/Cover%20photo.jpg)
+# <p align="center" style="margin-top: 0px;"> ![Screenshot 1403-04-27 at 20 53 03 3](https://github.com/user-attachments/assets/302d2c36-49ae-4174-b9d7-390b5b6289a0)
+
 
 
 This repository hosts the solutions for Oyo business room sales analysis.  

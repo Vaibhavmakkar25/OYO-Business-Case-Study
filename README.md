@@ -9,8 +9,7 @@ I used various SQL functions such as :
  Group by, Order by, Where         
  Aggregate functions Sum, Count, Average                
  Date functions Datename, Datediff, Month           
-
-Database Used - Microsoft SQL Server           
+          
 Insights:-
 
 1. Banglore , gurgaon & delhi were popular in the bookings, whereas Kolkata is less popular in bookings
@@ -29,4 +28,4 @@ Insights:-
         
 ***
 ## Case Study Solutions
-Click [here](https://github.com/AmitPatel-analyst/SQL-Case-Study/blob/main/OYO%20business%20case%20study/SqlCode_OYO_business.sql)
+Click [here](https://github.com/Vaibhavmakkar25/OYO-Business-Case-Study/blob/main/SqlCode_OYO_business.sql)

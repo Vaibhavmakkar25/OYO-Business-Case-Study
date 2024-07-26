@@ -1,176 +1,117 @@
--- load the excel data into sql database named CS.
+-- Use the database named CS
+USE CS;
 
-use CS
-go
+-- Initial Data Retrieval
+SELECT * FROM OYO.Hotel_Sales;
+SELECT * FROM OYO.City;
 
-	
-select * from [OYO].[Hotel_Sales];
+-- Add new columns and update them
+ALTER TABLE OYO.Hotel_Sales ADD COLUMN Price FLOAT NULL;
+UPDATE OYO.Hotel_Sales SET Price = amount + discount;
 
-select * from [OYO].[City];
+ALTER TABLE OYO.Hotel_Sales ADD COLUMN no_of_nights INT NULL;
+UPDATE OYO.Hotel_Sales SET no_of_nights = DATEDIFF(check_out, check_in);
 
--- add new columns 
-/*
-alter table [OYO].[Hotel_Sales]
-add Price float null;
+ALTER TABLE OYO.Hotel_Sales ADD COLUMN rate FLOAT NULL;
+UPDATE OYO.Hotel_Sales 
+SET rate = ROUND(
+    CASE 
+        WHEN no_of_rooms = 1 THEN Price / no_of_nights 
+        ELSE Price / no_of_nights / no_of_rooms 
+    END, 2);
 
-update [OYO].[Hotel_Sales]
-set Price = amount + discount;
+-- Summary Statistics
+SELECT COUNT(1) AS total_records FROM OYO.Hotel_Sales;
+SELECT COUNT(1) AS no_of_hotels FROM OYO.City;
+SELECT COUNT(DISTINCT city) AS total_cities FROM OYO.City;
 
-alter table [OYO].[Hotel_Sales]
-add no_of_nights int null;
+-- No of hotels in different cities
+SELECT city, COUNT(hotel_id) AS no_of_hotels
+FROM OYO.City
+GROUP BY city
+ORDER BY no_of_hotels DESC;
 
-update [OYO].[Hotel_Sales]
-set no_of_nights = DATEDIFF(day,check_in,check_out);
+-- Average room rates of different cities
+SELECT b.city, ROUND(AVG(a.rate), 2) AS average_room_rates
+FROM OYO.Hotel_Sales AS a
+INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
+GROUP BY b.city
+ORDER BY average_room_rates DESC;
 
-alter table [OYO].[Hotel_Sales]
-add rate float null;
+-- Cancellation rates of different cities
+SELECT b.city AS City, 
+       FORMAT(100.0 * SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) / COUNT(date_of_booking), 1) AS cancellation_rate
+FROM OYO.Hotel_Sales AS a
+INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
+GROUP BY b.city
+ORDER BY cancellation_rate DESC;
 
-update [OYO].[Hotel_Sales]
-set rate = ROUND( case when no_of_rooms = 1 then 
-		Price/no_of_nights 
-		else Price/no_of_nights/no_of_rooms end,2) 
-*/
-
- select count(1) [total records]
- from OYO.Hotel_Sales;
-
- select count(1) [no of hotels]
- from OYO.City;
-
- select count(distinct city) [total cities]
- from OYO.City;
- 
- -- No of hotels in different cities
-
- select city, COUNT	(hotel_id) [no of hotels]
- from OYO.City
- group by city
- order by 2 desc;
-
- -- average room rates of different cities
-
-
- select b.city ,ROUND( AVG(a.rate),2) [average room rates]
- from OYO.Hotel_Sales as a
- inner join OYO.City as b
- on a.hotel_id  = b.hotel_id
- group by b.city
- order by 2 desc;
-
-
- -- Cancellation rates of different cities
-
-	 select b.city as City, 
-			format(100.0* sum(case when status = 'Cancelled' then 1 else 0 end)
-			/count(date_of_booking),'f1') [% Cancellation Rate]
-	 from	[OYO].[Hotel_Sales] as a
-	 inner join OYO.City as b
-	 on a.hotel_id=b.hotel_id
-	 group by b.city
-	 order by 2 desc;
-
--- No of bookings of different cities in Jan Feb Mar Months.
-
-select	b.city [City], datename(month,date_of_booking) [Months], count(date_of_booking) [No of bookings]
-from	[OYO].[Hotel_Sales] as a
-inner join OYO.City as b
-on a.hotel_id=b.hotel_id
-group by b.city, datepart(month,date_of_booking),datename(month,date_of_booking)
-order by 1,datepart(month,date_of_booking) ;
-
-
-select	b.city [City], datename(month,date_of_booking) [Months], count(date_of_booking) [No of bookings]
-from	[OYO].[Hotel_Sales] as a
-inner join OYO.City as b
-on a.hotel_id=b.hotel_id
-group by b.city,datename(month,date_of_booking)
-order by 1,2 ;
-
-
-
+-- No of bookings of different cities in Jan Feb Mar Months
+SELECT b.city AS City, MONTHNAME(date_of_booking) AS Months, COUNT(date_of_booking) AS no_of_bookings
+FROM OYO.Hotel_Sales AS a
+INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
+GROUP BY b.city, MONTH(date_of_booking)
+ORDER BY City, MONTH(date_of_booking);
 
 -- Frequency of early bookings prior to check-in the hotel
-
-select	DATEDIFF(day,date_of_booking,check_in)[Days before check-in] 
-		, count(1)[Frequency_Early_Bookings_Days]
-from	OYO.Hotel_Sales
-group by DATEDIFF( day,date_of_booking,check_in);
+SELECT DATEDIFF(check_in, date_of_booking) AS days_before_check_in, COUNT(1) AS frequency_early_bookings_days
+FROM OYO.Hotel_Sales
+GROUP BY days_before_check_in;
 
 -- Frequency of bookings of no of rooms in Hotel
+SELECT no_of_rooms, COUNT(1) AS frequency_of_bookings
+FROM OYO.Hotel_Sales
+GROUP BY no_of_rooms
+ORDER BY no_of_rooms;
 
-select no_of_rooms, count(1) [frequency_of_bookings]
-from oyo.Hotel_Sales
-group by no_of_rooms
-order by no_of_rooms;
-
--- net revenue to company (due to some bookings cancelled)  & Gross revenue to company
-
-select	city, sum(amount) [gross revenue] , 
-		sum(case when status in ('No Show' ,'Stayed') then amount end) as [net revenue]
-from	OYO.Hotel_Sales as a
-inner join OYO.City as b
-on		a.hotel_id = b.hotel_id
-group by city
-order by 1;
+-- Net revenue to company (due to some bookings cancelled) & Gross revenue to company
+SELECT b.city, SUM(a.amount) AS gross_revenue, 
+       SUM(CASE WHEN a.status IN ('No Show', 'Stayed') THEN a.amount END) AS net_revenue
+FROM OYO.Hotel_Sales AS a
+INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
+GROUP BY b.city
+ORDER BY b.city;
 
 -- Discount offered by different cities
+SELECT b.city, FORMAT(AVG(100.0 * a.discount / a.Price), 1) AS discount_offered
+FROM OYO.Hotel_Sales AS a
+INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
+GROUP BY b.city
+ORDER BY discount_offered;
 
-select	city, format(AVG(100.0*discount/Price),'f1') [% Discount offered]
-from	OYO.Hotel_Sales as a
-inner join OYO.City as b
-on		a.hotel_id = b.hotel_id
-group by city
-order by 2;
-
---done
----------------------------------------------------------------------------
-
--- NEW CUSTOMERS ON JAN MONTH - 719
--- REPEAT CUSTOMER ON FEB MONTH - 133
--- NEW CUSTOMERS ON feb MONTH - 566
--- total customer on feb month - 699 (566 + 133)
-
-
-with Cust_jan as(
-select distinct customer_id
-					from OYO.Hotel_Sales
-					where MONTH(date_of_booking) = 1
-					)
-, repeat_cust_feb as(
-select distinct s.customer_id
-					from OYO.Hotel_Sales as s
-					inner join Cust_jan as b
-					on b.customer_id = s.customer_id
-					where MONTH(date_of_booking) = 2 
-					)
-,total_Cust_feb as (
-select distinct customer_id
-					from OYO.Hotel_Sales
-					where MONTH(date_of_booking) = 2
-					)
-, new_cust_feb as
-(
-select customer_id [new customer in feb]
-from total_Cust_feb as a 
-except select customer_id
-from repeat_cust_feb  as b
+-- New and repeat customers analysis
+WITH Cust_jan AS (
+    SELECT DISTINCT customer_id
+    FROM OYO.Hotel_Sales
+    WHERE MONTH(date_of_booking) = 1
+),
+repeat_cust_feb AS (
+    SELECT DISTINCT s.customer_id
+    FROM OYO.Hotel_Sales AS s
+    INNER JOIN Cust_jan AS b ON b.customer_id = s.customer_id
+    WHERE MONTH(s.date_of_booking) = 2
+),
+total_Cust_feb AS (
+    SELECT DISTINCT customer_id
+    FROM OYO.Hotel_Sales
+    WHERE MONTH(date_of_booking) = 2
+),
+new_cust_feb AS (
+    SELECT customer_id AS new_customer_in_feb
+    FROM total_Cust_feb AS a
+    WHERE a.customer_id NOT IN (SELECT customer_id FROM repeat_cust_feb)
 )
-SELECT count(c.[new customer in feb]) [repeat customer in feb]
-FROM new_cust_feb as c
-ORDER BY 1;
+SELECT COUNT(c.new_customer_in_feb) AS repeat_customer_in_feb
+FROM new_cust_feb AS c;
 
-Insights:-
+-- Insights:
+-- 1. Bangalore, Gurgaon & Delhi were popular in the bookings, whereas Kolkata is less popular in bookings.
+-- 2. Nature of Bookings:
+--    • Nearly 50% of the bookings were made on the day of check-in only.
+--    • Nearly 85% of the bookings were made with less than 4 days prior to the date of check-in.
+--    • Very few bookings were made in advance (i.e., over a month or 2 months).
+--    • Most of the bookings involved only a single room.
+--    • Nearly 80% of the bookings involved a stay of 1 night only.
+-- 3. OYO should acquire more hotels in the cities of Pune, Kolkata & Mumbai. Because their average room rates are comparatively higher, so more revenue will come.
+-- 4. The % cancellation rate is high in all 9 cities except Pune, so OYO should focus on finding reasons for cancellations.
 
-1. Banglore , gurgaon & delhi were popular in the bookings, whereas Kolkata is less popular in bookings
-2. Nature of Bookings:
-
-• Nearly 50 % of the bookings were made on the day of check in only.
-• Nearly 85 % of the bookings were made with less than 4 days prior to the date of check in.
-• Very few no.of bookings were made in advance(i.e over a 1 month or 2 months).
-• Most of the bookings involved only a single room.
-• Nearly 80% of the bookings involved a stay of 1 night only.
-
-3. Oyo should acquire more hotels in the cities of Pune, kolkata & Mumbai. Because their average room rates are comparetively higher so more revenue will come.
-
-4. The % cancellation Rate is high on all 9 cities except pune ,so Oyo should focus on finding reasons about cancellation.
- 

@@ -26,7 +26,7 @@ SELECT COUNT(1) AS no_of_hotels FROM OYO.City;
 SELECT COUNT(DISTINCT city) AS total_cities FROM OYO.City;
 
 -- No of hotels in different cities
-SELECT city, COUNT(hotel_id) AS no_of_hotels
+SELECT city, COUNT(*) AS no_of_hotels
 FROM OYO.City
 GROUP BY city
 ORDER BY no_of_hotels DESC;

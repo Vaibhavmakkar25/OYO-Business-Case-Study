@@ -47,19 +47,19 @@ GROUP BY b.city
 ORDER BY cancellation_rate DESC;
 
 -- No of bookings of different cities in Jan Feb Mar Months
-SELECT b.city AS City, MONTHNAME(date_of_booking) AS Months, COUNT(date_of_booking) AS no_of_bookings
+SELECT b.city AS City, MONTHNAME(date_of_booking) AS Months, COUNT(*) AS no_of_bookings
 FROM OYO.Hotel_Sales AS a
 INNER JOIN OYO.City AS b ON a.hotel_id = b.hotel_id
 GROUP BY b.city, MONTH(date_of_booking)
 ORDER BY City, MONTH(date_of_booking);
 
 -- Frequency of early bookings prior to check-in the hotel
-SELECT DATEDIFF(check_in, date_of_booking) AS days_before_check_in, COUNT(1) AS frequency_early_bookings_days
+SELECT DATEDIFF(check_in, date_of_booking) AS days_before_check_in, COUNT(*) AS frequency_early_bookings_days
 FROM OYO.Hotel_Sales
 GROUP BY days_before_check_in;
 
 -- Frequency of bookings of no of rooms in Hotel
-SELECT no_of_rooms, COUNT(1) AS frequency_of_bookings
+SELECT no_of_rooms, COUNT(*) AS frequency_of_bookings
 FROM OYO.Hotel_Sales
 GROUP BY no_of_rooms
 ORDER BY no_of_rooms;
@@ -101,7 +101,7 @@ new_cust_feb AS (
     FROM total_Cust_feb AS a
     WHERE a.customer_id NOT IN (SELECT customer_id FROM repeat_cust_feb)
 )
-SELECT COUNT(c.new_customer_in_feb) AS repeat_customer_in_feb
+SELECT COUNT(c.new_customer_in_feb) AS new_customers_in_feb
 FROM new_cust_feb AS c;
 
 -- Insights:
